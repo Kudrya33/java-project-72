@@ -2,9 +2,7 @@ package hexlet.code.repository;
 
 import hexlet.code.model.Url;
 
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +65,24 @@ public class UrlRepository extends BaseRepository {
                 result.add(url);
             }
             return result;
+        }
+    }
+
+    public static Optional<Url> findByName(String url) throws SQLException {
+        String sql = "SELECT * FROM urls WHERE name = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, url);
+            ResultSet resultSet = stmt.executeQuery();
+            if (resultSet.next()) {
+                long id = resultSet.getLong("id");
+                Timestamp createdAt = resultSet.getTimestamp("createdAt");
+                Url result = new Url(url);
+                result.setCreatedAt(createdAt.toLocalDateTime());
+                result.setId(id);
+                return Optional.of(result);
+            }
+            return Optional.empty();
         }
     }
 }

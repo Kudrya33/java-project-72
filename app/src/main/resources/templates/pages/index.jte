@@ -14,5 +14,10 @@
                </div>
             @endfor
         @endif
+        @if (page != null && page.getFlash() != null)
+            <div class="rounded-0 m-0 alert alert-${page.getFlashType()}" role="alert">
+                ${page.getFlash()}
+            </div>
+        @endif
     `
 )

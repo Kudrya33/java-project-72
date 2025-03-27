@@ -1,5 +1,8 @@
 @import gg.jte.Content
+@import hexlet.code.dto.BasePage
+
 @param Content content
+@param BasePage page = null
 
 <!DOCTYPE html>
 <html lang="ru">
@@ -25,6 +28,11 @@
         <input type="submit">
       </form>
     </div>
+    @if (page != null && page.getFlash() != null)
+        <div class="rounded-0 m-0 alert alert-${page.getFlashType()}" role="alert">
+            ${page.getFlash()}
+        </div>
+    @endif
     ${content}
   </body>
 </html>
