@@ -2,7 +2,9 @@ package hexlet.code;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import hexlet.code.controller.UrlsController;
 import hexlet.code.repository.BaseRepository;
+import hexlet.code.util.NamedRoutes;
 import io.javalin.Javalin;
 import io.javalin.rendering.template.JavalinJte;
 
@@ -66,9 +68,14 @@ public class App {
             config.fileRenderer(new JavalinJte(createTemplateEngine()));
         });
 
-        app.get("/", ctx -> {
+        app.get(NamedRoutes.homePath(), ctx -> {
             ctx.render("homePage.jte");
         });
+
+        app.get("/urls", UrlsController::index);
+        app.get("/urls/{id}", UrlsController::show);
+        app.post("/urls", UrlsController::create);
+
         return app;
     }
 }
