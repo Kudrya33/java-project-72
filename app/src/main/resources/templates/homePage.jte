@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Hello Hexlet!</title>
-    <title>Главная</title>
+    <title>Главная страница</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
         crossorigin="anonymous">
@@ -16,7 +16,7 @@
         crossorigin="anonymous"></script>
   </head>
   <body>
-    <div class="p-3 text-success-emphasis bg-success-subtle border border-success-subtle rounded-3">
+    <div>
       Hello, world!
     </div>
   </body>

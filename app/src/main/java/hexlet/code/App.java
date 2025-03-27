@@ -67,7 +67,7 @@ public class App {
         });
 
         app.get("/", ctx -> {
-            ctx.render("mainPage.jte");
+            ctx.render("homePage.jte");
         });
         return app;
     }
