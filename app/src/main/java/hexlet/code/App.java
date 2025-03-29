@@ -6,7 +6,6 @@ import hexlet.code.controller.UrlsController;
 import hexlet.code.repository.BaseRepository;
 import hexlet.code.util.NamedRoutes;
 import io.javalin.Javalin;
-import io.javalin.rendering.template.JavalinJte;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -50,7 +49,8 @@ public class App {
 
     public static Javalin getApp() throws IOException, SQLException {
         var hikariConfig = new HikariConfig();
-        String jdbcDataBaseUrl = System.getenv().getOrDefault("JDBC_DATABASE_URL", "jdbc:h2:mem:project;DB_CLOSE_DELAY=-1;");
+        String jdbcDataBaseUrl = System.getenv().getOrDefault("JDBC_DATABASE_URL",
+                "jdbc:h2:mem:project;DB_CLOSE_DELAY=-1;");
         hikariConfig.setJdbcUrl(jdbcDataBaseUrl);
 
         var dataSource = new HikariDataSource(hikariConfig);
