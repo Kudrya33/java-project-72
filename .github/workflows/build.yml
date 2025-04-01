@@ -14,18 +14,17 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-      - uses: gradle/gradle-build-action@v3
+      - uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: 8.7
-          arguments: build
-          build-root-directory: app
-      #- run: ./gradlew checkstyleMain
-      #- run: ./gradlew test
+      - run: cd app
+      - run: make lint
+      - run: make test
       - name: Publish code coverage
         uses: qltysh/qlty-action/coverage@main
         env:
-          QLTY_COVERAGE_TOKEN: ${{secrets.QLTY_COVERAGE_TOKEN}}
-          JACOCO_SOURCE_PATH: app/src/main/java
+          CC_TEST_REPORTER_ID: ${{secrets.QLTY_COVERAGE_TOKEN}}
+          JACOCO_SOURCE_PATH: ${{github.workspace}}/app/src/main/java
         with:
           coverageCommand: make report
           coverageLocations: ${{github.workspace}}/app/build/reports/jacoco/test/jacocoTestReport.xml:jacoco
