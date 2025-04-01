@@ -1,23 +1,24 @@
 @import hexlet.code.util.NamedRoutes
-@import hexlet.code.dto.urls.UrlsPage
-@param UrlsPage page
+@import hexlet.code.dto.urls.BuildPage
 
-@template.homePage(
+@param BuildPage page
+
+@template.homePage(page = page,
     content = @`
-        <h1>Urls List</h1>
-        @if(page.getUrls().isEmpty())
-            <p>Urls list is empty</p>
-        @else
-            @for(var url : page.getUrls())
-               <div>
-                   <h2><a href="${NamedRoutes.urlPath(url.getId())}">${url.getName()}</a></h2>
-               </div>
-            @endfor
-        @endif
-        @if (page != null && page.getFlash() != null)
-            <div class="rounded-0 m-0 alert alert-${page.getFlashType()}" role="alert">
-                ${page.getFlash()}
+    <section class="flex-grow-6 container-fluid bg-dark p-5">
+    <div class="col-md-10 col-lg-8 mx-auto text-white">
+        <form action="${NamedRoutes.urlsPath()}" method="post">
+            <h1>Анализатор страниц</h1>
+            <p class="lead">Проверка сайта на SEO пригодность</p>
+            <div class="row">
+                <label class="col">
+                    <input class="form-control w-100 form-floating" type="url" name="url" value="${page.getName()}" placeholder="ссылка">
+                </label>
+                <input type="submit" value="принять" class="col-auto btn btn-primary">
+                <p class="mt-2 mb-0 text-white">Пример: https://www.example.com</p>
             </div>
-        @endif
-    `
-)
+        </form>
+    </div>
+    </section>
+    <section class="flex-grow-1 container-fluid bg-white p-5"></section>
+`)

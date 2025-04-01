@@ -1,73 +1,52 @@
 package hexlet.code.repository;
 
 import hexlet.code.model.Url;
+import org.postgresql.util.PGTimestamp;
 
-
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.time.LocalDateTime;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 public class UrlRepository extends BaseRepository {
+
     public static void save(Url url) throws SQLException {
-        var sql = "INSERT INTO urls (name, createdAt) VALUES (?, ?)";
-        try (var conn = dataSource.getConnection();
-             var preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        String sql = "INSERT INTO urls (name, created_at) VALUES (?, ?)";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setString(1, url.getName());
-            var createdAt = LocalDateTime.now();
-            preparedStatement.setTimestamp(2, Timestamp.valueOf(createdAt));
-
+            PGTimestamp time = new PGTimestamp(new Date().getTime());
+            preparedStatement.setTimestamp(2, time);
             preparedStatement.executeUpdate();
-            var generatedKeys = preparedStatement.getGeneratedKeys();
+            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+
+            url.setCreatedAt(time);
             if (generatedKeys.next()) {
-                url.setId(generatedKeys.getLong(1));
-                url.setCreatedAt(createdAt);
-
+                url.setId(generatedKeys.getInt(1));
             } else {
-                throw new SQLException("DB have not returned an id after saving an entity");
+                throw new SQLException("BD have not returned id key");
             }
-        }
-    }
-
-    public static Optional<Url> find(Long id) throws SQLException {
-        var sql = "SELECT * FROM urls WHERE id = ?";
-        try (var conn = dataSource.getConnection();
-             var stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, id);
-            var resultSet = stmt.executeQuery();
-            if (resultSet.next()) {
-                var name = resultSet.getString("name");
-                var createdAt = resultSet.getTimestamp("createdAt").toLocalDateTime();
-
-                var url = new Url(name);
-                url.setId(id);
-                url.setCreatedAt(createdAt);
-                return Optional.of(url);
-            }
-            return Optional.empty();
         }
     }
 
     public static List<Url> getEntities() throws SQLException {
-        var sql = "SELECT * FROM urls";
-        try (var conn = dataSource.getConnection();
-             var stmt = conn.prepareStatement(sql)) {
-            var resultSet = stmt.executeQuery();
-            var result = new ArrayList<Url>();
-            while (resultSet.next()) {
-                var id = resultSet.getLong("id");
-                var name = resultSet.getString("name");
-                var createdAt = resultSet.getTimestamp("createdAt").toLocalDateTime();
+        String sql = "SELECT * FROM urls";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            ResultSet resultSet = stmt.executeQuery();
+            List<Url> result = new ArrayList<>();
 
-                var url = new Url(name);
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                String name = resultSet.getString("name");
+                Url url = new Url(name);
                 url.setId(id);
-                url.setCreatedAt(createdAt);
                 result.add(url);
             }
             return result;
@@ -81,12 +60,30 @@ public class UrlRepository extends BaseRepository {
             stmt.setString(1, url);
             ResultSet resultSet = stmt.executeQuery();
             if (resultSet.next()) {
-                long id = resultSet.getLong("id");
-                Timestamp createdAt = resultSet.getTimestamp("createdAt");
+                int id = resultSet.getInt("id");
+                Timestamp createdAt = resultSet.getTimestamp("created_at");
                 Url result = new Url(url);
-                result.setCreatedAt(createdAt.toLocalDateTime());
+                result.setCreatedAt(createdAt);
                 result.setId(id);
                 return Optional.of(result);
+            }
+            return Optional.empty();
+        }
+    }
+
+    public static Optional<Url> find(int id) throws SQLException {
+        String sql = "SELECT * FROM urls WHERE id = ?";
+        try (Connection conn = dataSource.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            ResultSet resultSet = stmt.executeQuery();
+            if (resultSet.next()) {
+                String name = resultSet.getString("name");
+                Timestamp createdAt = resultSet.getTimestamp("created_at");
+                Url url = new Url(name);
+                url.setCreatedAt(createdAt);
+                url.setId(id);
+                return Optional.of(url);
             }
             return Optional.empty();
         }
