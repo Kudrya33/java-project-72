@@ -20,12 +20,20 @@ jobs:
       - run: cd app
       - run: make lint
       - run: make test
-      - name: Publish code coverage
-        uses: qltysh/qlty-action/coverage@main
-        env:
-          coverage-token: ${{secrets.QLTY_COVERAGE_TOKEN}}
-          JACOCO_SOURCE_PATH: ${{github.workspace}}/app/src/main/java
+      - name: Cache SonarQube packages
+        uses: actions/cache@v4
         with:
-          coverageCommand: make report
-          coverageLocations: ${{github.workspace}}/app/build/reports/jacoco/test/jacocoTestReport.xml:jacoco
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: ${{ runner.os }}-gradle
+      - name: Build and analyze
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew build sonar --info
           
