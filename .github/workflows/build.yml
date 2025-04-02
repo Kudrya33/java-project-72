@@ -21,9 +21,9 @@ jobs:
       - run: make lint
       - run: make test
       - name: Publish code coverage
-        uses: paambaati/codeclimate-action@v9.0.0
+        uses: qltysh/qlty-action/coverage@main
         env:
-          CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
+          coverage-token: ${{secrets.QLTY_COVERAGE_TOKEN}}
           JACOCO_SOURCE_PATH: ${{github.workspace}}/app/src/main/java
         with:
           coverageCommand: make report
