@@ -21,13 +21,11 @@ jobs:
       - run: make lint
       - run: make test
       - name: Publish code coverage
-        uses: qltysh/qlty-action/coverage@main
+        uses: paambaati/codeclimate-action@v9.0.0
+        env:
+          CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
+          JACOCO_SOURCE_PATH: ${{github.workspace}}/app/src/main/java
         with:
           coverageCommand: make report
-            coverage-token:{{secrets.QLTY_COVERAGE_TOKEN}}
-            files:target/lcov.info
           coverageLocations: ${{github.workspace}}/app/build/reports/jacoco/test/jacocoTestReport.xml:jacoco
-        env:
-          QLTY_COVERAGE_TOKEN: ${{secrets.QLTY_COVERAGE_TOKEN}}
-          JACOCO_SOURCE_PATH: ${{github.workspace}}/app/src/main/java
           
