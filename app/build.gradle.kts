@@ -7,6 +7,7 @@ plugins {
     id("io.freefair.lombok") version "8.12.1"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("se.patrikerdes.use-latest-versions") version "0.2.18"
+    id("org.sonarqube") version "6.0.1.5171"
 }
 
 application {
@@ -17,6 +18,14 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
     }
+}
+
+sonar {
+  properties {
+    property("sonar.projectKey", "Kudrya33_java-project-72")
+    property("sonar.organization", "pavel-kudrya")
+    property("sonar.host.url", "https://sonarcloud.io")
+  }
 }
 
 group = "hexlet.code"
