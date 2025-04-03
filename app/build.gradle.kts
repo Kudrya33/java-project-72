@@ -10,14 +10,6 @@ plugins {
     id("org.sonarqube") version "6.0.1.5171"
 }
 
-sonar {
-    properties {
-        property("sonar.projectKey", "Kudrya33_java-project-72")
-        property("sonar.organization", "pavel-kudrya")
-        property("sonar.host.url", "https://sonarcloud.io")
-    }
-}
-
 application {
     mainClass.set("hexlet.code.App")
 }
@@ -63,4 +55,12 @@ tasks.test {
 
 tasks.jacocoTestReport {
     reports { xml.required.set(true) }
+}
+
+sonar {
+    properties {
+        property("sonar.projectKey", "Kudrya33_java-project-72")
+        property("sonar.organization", "pavel-kudrya")
+        property("sonar.host.url", "https://sonarcloud.io")
+    }
 }
