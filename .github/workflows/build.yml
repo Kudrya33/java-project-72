@@ -14,27 +14,17 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v3
         with:
-          fetch-depth: 0
-      - name: Execute Gradle build
-        run: cd app && ./gradlew build
-      - name: Generate coverage report
-        run: make report
-      - name: Cache SonarQube packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-      - name: Cache Gradle packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: ${{ runner.os }}-gradle
-      - name: Build and analyze
+          gradle-version: 8.7
+      - run: cd app
+      - run: make lint
+      - run: make test
+      - name: Publish code coverage
+        uses: qltysh/qlty-action/coverage@main
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: cd app && ./gradlew sonar --info
+          QLTY_COVERAGE_TOKEN: ${{secrets.QLTY_COVERAGE_TOKEN}}
+          JACOCO_SOURCE_PATH: ${{github.workspace}}/app/src/main/java
+        with:
+          coverage-token: ${{secrets.QLTY_COVERAGE_TOKEN}}
+          files: ${{github.workspace}}/app/build/reports/jacoco/test/jacocoTestReport.xml:jacoco
