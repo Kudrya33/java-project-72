@@ -78,10 +78,9 @@ public class TestApp {
 
     @Test
     public void testFindByName() throws SQLException, MalformedURLException {
-        String name = "https://github.com/Kudrya33/java-project-72";
-        Url url = new Url(UrlsParser.get(name));
+        Url url = new Url("https://github.com");
         UrlRepository.save(url);
-        Optional<Url> entity = UrlRepository.findByName(UrlsParser.get(name));
+        Optional<Url> entity = UrlRepository.findByName(String.valueOf(url));
         JavalinTest.test(app, (server, client) -> {
             Response response = client.get(NamedRoutes.urlPath(entity.get().getId()));
             assertThat(response.code()).isEqualTo(200);
@@ -100,6 +99,10 @@ public class TestApp {
         mockWebServer.enqueue(mockResponse);
         Url website = new Url(baseUrl);
         UrlRepository.save(website);
+
+        Optional<Url> savedWebsite = UrlRepository.findByName(String.valueOf(website));
+        assertThat(savedWebsite).isPresent();
+        assertThat(savedWebsite.get().getUrlCheck()).isEqualTo(baseUrl);
 
         JavalinTest.test(app, (server, client) -> {
             Response response = client.post(NamedRoutes.urlChecks(website.getId()));
@@ -123,7 +126,7 @@ public class TestApp {
     }
 
     @Test
-    public void testPost() {
+    public void testPostUrlSavesToRepository() {
         JavalinTest.test(app, (server, client) -> {
             var name = "http://localhost:50275";
             var requestBody = "url=" + name;
