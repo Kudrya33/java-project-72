@@ -64,7 +64,7 @@ public class TestApp {
             Optional<Url> request = UrlRepository.findByName(requestBody);
             assertThat(response.code()).isEqualTo(200);
             assertThat(response.body().string()).contains("https://github.com");
-            assertThat(request).isNotNull();
+            assertThat(request).isPresent();
         });
     }
 
