@@ -64,8 +64,8 @@ public class UrlsController {
 
     public static void urls(Context ctx) throws SQLException {
         List<Url> urls = UrlRepository.getEntities();
-        List<Map<Integer, String>> checklist = UrlCheckRepository.getLastChecks();
-        UrlsPage page = new UrlsPage(urls, checklist);
+        Map<Integer, UrlCheck> lastChecks = UrlCheckRepository.getLastChecks();
+        UrlsPage page = new UrlsPage(urls, lastChecks);
         page.setFlash(ctx.consumeSessionAttribute("flash"));
         page.setFlashType(ctx.consumeSessionAttribute("flash-type"));
         ctx.render("pages/urls.jte", model("page", page));

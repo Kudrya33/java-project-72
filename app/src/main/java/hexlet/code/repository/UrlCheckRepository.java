@@ -66,26 +66,26 @@ public class UrlCheckRepository {
         }
     }
 
-    public static List<Map<Integer, String>> getLastChecks() throws SQLException {
-        String sql = "SELECT url_id, status_code, created_at FROM (SELECT DISTINCT ON (url_id) * FROM url_checks "
-                + "ORDER BY url_id, created_at DESC) sub ORDER BY created_at DESC";
+    public static Map<Integer, UrlCheck> getLastChecks() throws SQLException {
+        String sql = "SELECT DISTINCT ON (url_id) * FROM url_checks ORDER BY url_id, created_at DESC";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            ResultSet resultSet = stmt.executeQuery();
-            List<Map<Integer, String>> result = new ArrayList<>();
-            Map<Integer, String> mapStatusCode = new HashMap<>();
-            Map<Integer, String> mapCreatedAt = new HashMap<>();
+            ResultSet rs = stmt.executeQuery();
+            Map<Integer, UrlCheck> result = new HashMap<>();
 
-            while (resultSet.next()) {
-                int statusCode = resultSet.getInt("status_code");
-                Timestamp createdAt = resultSet.getTimestamp("created_at");
-                int urlId = resultSet.getInt("url_id");
-
-                mapStatusCode.put(urlId, String.valueOf(statusCode));
-                mapCreatedAt.put(urlId, String.valueOf(createdAt).substring(0, 16));
+            while (rs.next()) {
+                UrlCheck check = new UrlCheck(
+                        rs.getInt("status_code"),
+                        rs.getString("title"),
+                        rs.getString("h1"),
+                        rs.getString("description"),
+                        rs.getInt("url_id")
+                );
+                check.setId(rs.getInt("id"));
+                check.setCreatedAt(rs.getTimestamp("created_at"));
+                result.put(check.getUrlId(), check);
             }
-            result.add(mapStatusCode);
-            result.add(mapCreatedAt);
+
             return result;
         }
     }

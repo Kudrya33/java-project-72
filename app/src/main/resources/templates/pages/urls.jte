@@ -23,8 +23,16 @@
                         <tr>
                             <td class="col-1">${url.getId()}</td>
                             <td class="col-3"><a href="${NamedRoutes.urlPath(url.getId())}">${url.getName()}</a></td>
-                            <td class="col-1">${page.getChecklist().get(0).get(url.getId())}</td>
-                            <td class="col-3">${page.getChecklist().get(1).get(url.getId())}</td>
+                            <td class="col-1">
+                                @if (page.getLastChecks().get(url.getId()) != null)
+                                    ${page.getLastChecks().get(url.getId()).getStatusCode()}
+                                @endif
+                            </td>
+                            <td class="col-3">
+                                @if (page.getLastChecks().get(url.getId()) != null)
+                                    ${String.valueOf(page.getLastChecks().get(url.getId()).getCreatedAt()).substring(0, 16)}
+                                @endif
+                            </td>
                         </tr>
                     @endfor
                 </tbody>
