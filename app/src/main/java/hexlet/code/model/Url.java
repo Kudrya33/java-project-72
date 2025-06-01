@@ -3,7 +3,7 @@ package hexlet.code.model;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
@@ -11,7 +11,7 @@ import java.util.List;
 public class Url {
     private int id;
     private String name;
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
     private List<UrlCheck> urlCheck;
 
     public Url(String name) {

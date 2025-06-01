@@ -1,6 +1,8 @@
 package hexlet.code;
 
 import hexlet.code.model.Url;
+import hexlet.code.model.UrlCheck;
+import hexlet.code.repository.UrlCheckRepository;
 import hexlet.code.repository.UrlRepository;
 import hexlet.code.util.UrlsParser;
 import hexlet.code.util.NamedRoutes;
@@ -20,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -59,12 +62,18 @@ public class TestApp {
     @Test
     public void testCreateUrl() {
         JavalinTest.test(app, (server, client) -> {
-            String requestBody = "name=https://github.com";
+            String requestBody = "url=https://github.com";
             Response response = client.post("/urls", requestBody);
-            Optional<Url> request = UrlRepository.findByName(requestBody);
-            assertThat(response.code()).isEqualTo(200);
-            assertThat(response.body().string()).contains("https://github.com");
-            assertThat(request).isPresent();
+
+            assertThat(response.code()).isIn(200, 302);
+
+            Optional<Url> maybeUrl = UrlRepository.findByName("https://github.com");
+            assertThat(maybeUrl).isPresent();
+
+            Url saved = maybeUrl.get();
+            assertThat(saved.getName()).isEqualTo("https://github.com");
+            assertThat(saved.getId()).isGreaterThan(0);
+            assertThat(saved.getCreatedAt()).isNotNull();
         });
     }
 
@@ -80,7 +89,10 @@ public class TestApp {
     public void testFindByName() throws SQLException, MalformedURLException {
         Url url = new Url("https://github.com");
         UrlRepository.save(url);
-        Optional<Url> entity = UrlRepository.findByName(String.valueOf(url));
+
+        Optional<Url> entity = UrlRepository.findByName("https://github.com");
+        assertThat(entity).isPresent();
+
         JavalinTest.test(app, (server, client) -> {
             Response response = client.get(NamedRoutes.urlPath(entity.get().getId()));
             assertThat(response.code()).isEqualTo(200);
@@ -89,25 +101,37 @@ public class TestApp {
     }
 
     @Test
-    public void testChecks() throws SQLException {
+    public void testChecks() throws SQLException, IOException {
         String baseUrl = String.format("http://localhost:%s", mockWebServer.getPort());
         InputStream stream = JSONArray.class.getClassLoader().getResourceAsStream("htmlTest.html");
-        String jsonBody = IOUtils.toString(stream);
+        String htmlBody = IOUtils.toString(stream);
+
         MockResponse mockResponse = new MockResponse()
-                .setHeader("Content-Type", "application/json; charset=utf-8")
-                .setBody(jsonBody);
+                .setHeader("Content-Type", "text/html; charset=utf-8")
+                .setBody(htmlBody);
         mockWebServer.enqueue(mockResponse);
+
         Url website = new Url(baseUrl);
         UrlRepository.save(website);
 
-        Optional<Url> savedWebsite = UrlRepository.findByName(String.valueOf(website));
+        Optional<Url> savedWebsite = UrlRepository.findByName(baseUrl);
         assertThat(savedWebsite).isPresent();
-        assertThat(savedWebsite.get().getUrlCheck()).isEqualTo(baseUrl);
+        int websiteId = savedWebsite.get().getId();
 
         JavalinTest.test(app, (server, client) -> {
-            Response response = client.post(NamedRoutes.urlChecks(website.getId()));
-            assertThat(response.body().string()).contains("Hello")
-                    .contains("Hello h").contains("description");
+            Response response = client.post(NamedRoutes.urlChecks(websiteId));
+            assertThat(response.code()).isIn(200, 302);
+
+            List<UrlCheck> checks = UrlCheckRepository.getCheckList(websiteId);
+            assertThat(checks).isNotEmpty();
+
+            UrlCheck check = checks.get(0);
+            assertThat(check.getStatusCode()).isEqualTo(200);
+            assertThat(check.getTitle()).contains("Hello");
+            assertThat(check.getH1()).contains("Hello h");
+            assertThat(check.getDescription()).contains("description");
+            assertThat(check.getUrlId()).isEqualTo(websiteId);
+            assertThat(check.getCreatedAt()).isNotNull();
         });
     }
 
@@ -130,13 +154,18 @@ public class TestApp {
         JavalinTest.test(app, (server, client) -> {
             var name = "http://localhost:50275";
             var requestBody = "url=" + name;
-            assertThat(client.post("/urls", requestBody).code()).isEqualTo(200);
+            Response resp = client.post("/urls", requestBody);
+            assertThat(resp.code()).isIn(200, 302);
 
-            var actualUrl = UrlRepository.findByName(name);
-            assertThat(actualUrl).isNotNull();
+            Optional<Url> actualUrl = UrlRepository.findByName(name);
+            assertThat(actualUrl).isPresent();
+
+            Url fromDb = actualUrl.get();
+            assertThat(fromDb.getName()).isEqualTo(name);
+            assertThat(fromDb.getId()).isGreaterThan(0);
+            assertThat(fromDb.getCreatedAt()).isNotNull();
         });
     }
-
 
     @AfterAll
     static void serverOff() throws IOException {

@@ -39,19 +39,39 @@ public class UrlsController {
             String name = ctx.formParamAsClass("url", String.class)
                     .check(n -> !n.isEmpty(), "Поле не должно быть пустым")
                     .get().trim();
-            Url url = new Url(UrlsParser.get(name));
-            Optional<Url> repeat = UrlRepository.findByName(UrlsParser.get(name));
-            if (repeat.isEmpty()) {
-                UrlRepository.save(url);
-                ctx.sessionAttribute("flash", "Сайт успешно добавлен");
-                ctx.sessionAttribute("flash-type", "success");
-                ctx.redirect(NamedRoutes.urlsPath());
-            } else {
+
+            String normalizedUrl;
+            try {
+                normalizedUrl = UrlsParser.get(name);
+            } catch (MalformedURLException e) {
+                BuildPage page = new BuildPage(name);
+                ctx.sessionAttribute("flash", "Некорректный URL");
+                ctx.sessionAttribute("flash-type", "danger");
+                page.setFlash(ctx.consumeSessionAttribute("flash"));
+                page.setFlashType(ctx.consumeSessionAttribute("flash-type"));
+                ctx.render("pages/index.jte", model("page", page));
+                return;
+            }
+
+            Url url = new Url(normalizedUrl);
+            Optional<Url> repeat = UrlRepository.findByName(normalizedUrl);
+
+            repeat.ifPresentOrElse(existingUrl -> {
                 ctx.sessionAttribute("flash", "Сайт уже существует");
                 ctx.sessionAttribute("flash-type", "warning");
-                ctx.redirect(NamedRoutes.urlPath(repeat.get().getId()));
-            }
-        } catch (ValidationException | MalformedURLException | IllegalArgumentException e) {
+                ctx.redirect(NamedRoutes.urlPath(existingUrl.getId()));
+            }, () -> {
+                try {
+                    UrlRepository.save(url);
+                    ctx.sessionAttribute("flash", "Сайт успешно добавлен");
+                    ctx.sessionAttribute("flash-type", "success");
+                    ctx.redirect(NamedRoutes.urlsPath());
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+        } catch (ValidationException | IllegalArgumentException e) {
             String name = ctx.formParam("url");
             BuildPage page = new BuildPage(name);
             ctx.sessionAttribute("flash", "Некорректный URL");

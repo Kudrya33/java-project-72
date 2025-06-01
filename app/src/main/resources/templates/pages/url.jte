@@ -44,7 +44,7 @@
                     </thead>
                     <tbody>
                         @if(page.getUrl() != null && page.getUrl().getUrlCheck() != null)
-                            @for(UrlCheck check : page.getUrl().getUrlCheck().reversed())
+                            @for(UrlCheck check : page.getUrl().getUrlCheck())
                                 <tr>
                                     <td class="col-1">${check.getId()}</td>
                                     <td class="col-1">${check.getStatusCode()}</td>

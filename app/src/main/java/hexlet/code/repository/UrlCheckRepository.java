@@ -43,7 +43,7 @@ public class UrlCheckRepository {
     }
 
     public static List<UrlCheck> getCheckList(int urlId) throws SQLException {
-        String sql = "Select * FROM url_checks WHERE url_id = ?";
+        String sql = "SELECT * FROM url_checks WHERE url_id = ? ORDER BY created_at DESC";
         try (Connection conn = dataSource.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, urlId);

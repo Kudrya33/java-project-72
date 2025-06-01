@@ -1,7 +1,6 @@
 package hexlet.code.repository;
 
 import hexlet.code.model.Url;
-import org.postgresql.util.PGTimestamp;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,8 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,8 +20,8 @@ public class UrlRepository extends BaseRepository {
         try (Connection conn = dataSource.getConnection();
              PreparedStatement preparedStatement = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             preparedStatement.setString(1, url.getName());
-            PGTimestamp time = new PGTimestamp(new Date().getTime());
-            preparedStatement.setTimestamp(2, time);
+            LocalDateTime time = LocalDateTime.now();
+            preparedStatement.setTimestamp(2, Timestamp.valueOf(time));
             preparedStatement.executeUpdate();
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
 
@@ -61,7 +60,7 @@ public class UrlRepository extends BaseRepository {
             ResultSet resultSet = stmt.executeQuery();
             if (resultSet.next()) {
                 int id = resultSet.getInt("id");
-                Timestamp createdAt = resultSet.getTimestamp("created_at");
+                LocalDateTime createdAt = resultSet.getTimestamp("created_at").toLocalDateTime();
                 Url result = new Url(url);
                 result.setCreatedAt(createdAt);
                 result.setId(id);
@@ -79,7 +78,7 @@ public class UrlRepository extends BaseRepository {
             ResultSet resultSet = stmt.executeQuery();
             if (resultSet.next()) {
                 String name = resultSet.getString("name");
-                Timestamp createdAt = resultSet.getTimestamp("created_at");
+                LocalDateTime createdAt = resultSet.getTimestamp("created_at").toLocalDateTime();
                 Url url = new Url(name);
                 url.setCreatedAt(createdAt);
                 url.setId(id);
