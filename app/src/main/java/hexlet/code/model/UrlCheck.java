@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @NoArgsConstructor
 @Getter
@@ -16,7 +16,7 @@ public class UrlCheck {
     private String h1;
     private String description;
     private int urlId;
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
     public UrlCheck(int statusCode, String title, String h1, String description, int urlId) {
         this.statusCode = statusCode;

@@ -11,13 +11,11 @@ import hexlet.code.dto.urls.UrlPage;
 import hexlet.code.dto.urls.UrlsPage;
 import io.javalin.http.Context;
 import io.javalin.http.NotFoundResponse;
-import io.javalin.validation.ValidationException;
 import kong.unirest.core.HttpResponse;
 import kong.unirest.core.Unirest;
 import kong.unirest.core.UnirestException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-
 
 import java.net.MalformedURLException;
 import java.sql.SQLException;
@@ -35,50 +33,43 @@ public class UrlsController {
     }
 
     public static void buildUrls(Context ctx) throws SQLException {
+        String inputUrl = ctx.formParam("url");
+
+        if (inputUrl == null || inputUrl.trim().isEmpty()) {
+            BuildPage page = new BuildPage(inputUrl);
+            ctx.sessionAttribute("flash", "Поле не должно быть пустым");
+            ctx.sessionAttribute("flash-type", "danger");
+            page.setFlash(ctx.consumeSessionAttribute("flash"));
+            page.setFlashType(ctx.consumeSessionAttribute("flash-type"));
+            ctx.render("pages/index.jte", model("page", page));
+            return;
+        }
+
+        String normalizedUrl;
         try {
-            String name = ctx.formParamAsClass("url", String.class)
-                    .check(n -> !n.isEmpty(), "Поле не должно быть пустым")
-                    .get().trim();
-
-            String normalizedUrl;
-            try {
-                normalizedUrl = UrlsParser.get(name);
-            } catch (MalformedURLException e) {
-                BuildPage page = new BuildPage(name);
-                ctx.sessionAttribute("flash", "Некорректный URL");
-                ctx.sessionAttribute("flash-type", "danger");
-                page.setFlash(ctx.consumeSessionAttribute("flash"));
-                page.setFlashType(ctx.consumeSessionAttribute("flash-type"));
-                ctx.render("pages/index.jte", model("page", page));
-                return;
-            }
-
-            Url url = new Url(normalizedUrl);
-            Optional<Url> repeat = UrlRepository.findByName(normalizedUrl);
-
-            repeat.ifPresentOrElse(existingUrl -> {
-                ctx.sessionAttribute("flash", "Сайт уже существует");
-                ctx.sessionAttribute("flash-type", "warning");
-                ctx.redirect(NamedRoutes.urlPath(existingUrl.getId()));
-            }, () -> {
-                try {
-                    UrlRepository.save(url);
-                    ctx.sessionAttribute("flash", "Сайт успешно добавлен");
-                    ctx.sessionAttribute("flash-type", "success");
-                    ctx.redirect(NamedRoutes.urlsPath());
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-
-        } catch (ValidationException | IllegalArgumentException e) {
-            String name = ctx.formParam("url");
-            BuildPage page = new BuildPage(name);
+            normalizedUrl = UrlsParser.get(inputUrl.trim());
+        } catch (MalformedURLException e) {
+            BuildPage page = new BuildPage(inputUrl);
             ctx.sessionAttribute("flash", "Некорректный URL");
             ctx.sessionAttribute("flash-type", "danger");
             page.setFlash(ctx.consumeSessionAttribute("flash"));
             page.setFlashType(ctx.consumeSessionAttribute("flash-type"));
             ctx.render("pages/index.jte", model("page", page));
+            return;
+        }
+
+        Optional<Url> existingUrl = UrlRepository.findByName(normalizedUrl);
+
+        if (existingUrl.isPresent()) {
+            ctx.sessionAttribute("flash", "Сайт уже существует");
+            ctx.sessionAttribute("flash-type", "warning");
+            ctx.redirect(NamedRoutes.urlPath(existingUrl.get().getId()));
+        } else {
+            Url url = new Url(normalizedUrl);
+            UrlRepository.save(url);
+            ctx.sessionAttribute("flash", "Сайт успешно добавлен");
+            ctx.sessionAttribute("flash-type", "success");
+            ctx.redirect(NamedRoutes.urlsPath());
         }
     }
 

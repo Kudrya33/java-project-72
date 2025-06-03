@@ -8,8 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,8 +28,8 @@ public class UrlCheckRepository {
             preparedStatement.setString(3, urlCheck.getH1());
             preparedStatement.setString(4, urlCheck.getDescription());
             preparedStatement.setLong(5, urlCheck.getUrlId());
-            Timestamp time = new Timestamp(new Date().getTime());
-            preparedStatement.setTimestamp(6, time);
+            LocalDateTime time = LocalDateTime.now();
+            preparedStatement.setTimestamp(6, Timestamp.valueOf(time));
             preparedStatement.executeUpdate();
             ResultSet resultSet = preparedStatement.getGeneratedKeys();
 
@@ -56,7 +56,7 @@ public class UrlCheckRepository {
                 String h1 = resultSet.getString("h1");
                 String title = resultSet.getString("title");
                 String description = resultSet.getString("description");
-                Timestamp createdAt = resultSet.getTimestamp("created_at");
+                LocalDateTime createdAt = resultSet.getTimestamp("created_at").toLocalDateTime();
                 UrlCheck urlCheck = new UrlCheck(statusCode, h1, title, description, urlId);
                 urlCheck.setId(id);
                 urlCheck.setCreatedAt(createdAt);
@@ -82,7 +82,7 @@ public class UrlCheckRepository {
                         rs.getInt("url_id")
                 );
                 check.setId(rs.getInt("id"));
-                check.setCreatedAt(rs.getTimestamp("created_at"));
+                check.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
                 result.put(check.getUrlId(), check);
             }
 
